@@ -10,7 +10,7 @@ class Venado {
   /** constructor del personaje principal y una guia de la ubicacion de sus corazones */
   public Venado() {
     this.posicion = new PVector(width/2, 500);
-    this.velocidad = new PVector(7, 0);
+    this.velocidad = new PVector(9, 0);
     this.izq = false;
     this.der = false;
     this.alto = 100;
