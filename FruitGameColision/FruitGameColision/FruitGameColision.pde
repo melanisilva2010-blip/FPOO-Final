@@ -1,5 +1,6 @@
 private Venado venado;
 private PImage fondo;
+private PImage niveles;
 private int estado;
 private ArrayList<Fruta> frutas;
 private int ultimaFruta = 0;
@@ -15,6 +16,7 @@ public void setup() {
   escena = new Escena();
   imageMode(CORNER);
   fondo = loadImage("backgroundtest.jpg");
+  niveles = loadImage("niveles.jpg");
   estado = StateMachine.MENU;
   frutas = new ArrayList<Fruta>();
 }
@@ -129,10 +131,40 @@ public void draw() {
       text("Creditos", 50, 100);
       text("pulse z para volver al menu", 130, 50);
     }
+    
+    case StateMachine.MENU_NIVELES:
+  {
+    image(niveles, 0, 0, width, height); // 👈 fondo ya diseñado
+    fill(255);
+    textAlign(CENTER);
+    textSize(25);
+    text("Pulsa 1 para Nivel 1", width/2, height/2 - 40);
+    text("Pulsa 2 para Nivel 2", width/2, height/2 + 40);
+    text("Pulsa Z para volver al MENU", width/2, height - 100);
+    break;
+  }
   }
 }
 
 public void keyPressed() {
+  
+  // Desde el menú principal al menú de niveles
+if (key == 'n' && estado == StateMachine.MENU) {
+  estado = StateMachine.MENU_NIVELES;
+}
+
+// Dentro del menú de niveles
+if (estado == StateMachine.MENU_NIVELES) {
+  if (key == '1') {
+    estado = StateMachine.TUTORIAL; // 👈 aquí podrías cargar Nivel 1
+  }
+  if (key == '2') {
+    estado = StateMachine.CINEMATICA; // 👈 ejemplo: Nivel 2 con cinemática
+  }
+  if (key == 'z') {
+    estado = StateMachine.MENU; // volver al menú principal
+  }
+}
   if (keyCode == ENTER && estado == StateMachine.MENU) {
     estado = StateMachine.CINEMATICA;
   }
@@ -157,6 +189,24 @@ public void keyPressed() {
   if (key == 'z' && estado== StateMachine.CREDITOS) {
     estado = StateMachine.MENU;
   }
+  
+  // Desde el menú principal al menú de niveles
+if (key == 'n' && estado == StateMachine.MENU) {
+  estado = StateMachine.MENU_NIVELES;
+}
+
+// Dentro del menú de niveles
+if (estado == StateMachine.MENU_NIVELES) {
+  if (key == '1') {
+    estado = StateMachine.TUTORIAL; // 👈 aquí podrías cargar Nivel 1
+  }
+  if (key == '2') {
+    estado = StateMachine.CINEMATICA; // 👈 ejemplo: Nivel 2 con cinemática
+  }
+  if (key == 'z') {
+    estado = StateMachine.MENU; // volver al menú principal
+  }
+}
 
 }
 

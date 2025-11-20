@@ -6,4 +6,5 @@ class StateMachine {
   public static final int PAUSA = 5;
   public static final int CREDITOS = 6;
   public static final int CINEMATICA = 7;
+   public static final int MENU_NIVELES = 8;
 }
