@@ -27,6 +27,8 @@ class Escena {
     dialogo = new Dialogo();
   }
 
+
+
   void dibujar() {
     image(fondo, 0, 0, width, height);
     dialogo.actualizar();
@@ -73,5 +75,12 @@ class Escena {
     }
 
     return false;
+  }
+  public void reset() {
+    dialogo.reset();
+    // si querés, también podés recrear los botones en sus posiciones iniciales
+    btnSi = new Boton(new PVector(120, height - 80), "SI");
+    btnNo = new Boton(new PVector(240, height - 80), "NO");
+    btnContinuar = new Boton(new PVector(width - 140, height - 80), "Continuar");
   }
 }

@@ -78,22 +78,30 @@ class Dialogo {
     }
   }
 
-    // lógica igual que en tu función actualizarLinea()
-    // actualiza lineaActual y hablaOso según estado y paso
+  // lógica igual que en tu función actualizarLinea()
+  // actualiza lineaActual y hablaOso según estado y paso
 
 
-    void mostrarCuadro() {
-      float boxX = 20, boxY = height - 130, boxW = width - 40, boxH = 110;
-      noStroke();
-      fill(0, 150);
-      rect(boxX, boxY, boxW, boxH);
-      fill(255);
-      textAlign(LEFT, TOP);
-      text(lineaActual, boxX + 16, boxY + 14, boxW - 32, boxH - 28);
-    }
+  void mostrarCuadro() {
+    float boxX = 20, boxY = height - 130, boxW = width - 40, boxH = 110;
+    noStroke();
+    fill(0, 150);
+    rect(boxX, boxY, boxW, boxH);
+    fill(255);
+    textAlign(LEFT, TOP);
+    text(lineaActual, boxX + 16, boxY + 14, boxW - 32, boxH - 28);
+     textAlign(CENTER, CENTER);
 
-    boolean muestraOpciones() {
-      return (estado == 0 && paso >= 3) || (estado == 2 && paso >= 2);
-    }
   }
-  
+
+  boolean muestraOpciones() {
+    return (estado == 0 && paso >= 3) || (estado == 2 && paso >= 2);
+  }
+  void reset() {
+    estado = 0;
+    paso = 0;
+    lineaActual = "";
+    hablaOso = true;
+    mostrarCuadro();
+  }
+}

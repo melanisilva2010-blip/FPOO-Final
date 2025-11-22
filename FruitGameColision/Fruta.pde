@@ -1,4 +1,4 @@
- class Fruta {
+class Fruta {
   protected PVector posicion;
   protected PVector velocidad;
   protected int valor;
@@ -11,10 +11,12 @@
     this.velocidad.y = 3;
   }
 
-   void dibujar(){}
-   void caer(float deltaTime){}
+  void dibujar() {
+  }
+  void caer(float deltaTime) {
+  }
   public boolean hayColision(Venado v) {
-  float distancia = dist(posicion.x, posicion.y, v.getX(), v.getY());
-  return distancia < 50; // ajustable según tamaño
+    float distancia = dist(posicion.x, posicion.y, v.getX(), v.getY());
+    return distancia < 50; // ajustable según tamaño
+  }
 }
- }

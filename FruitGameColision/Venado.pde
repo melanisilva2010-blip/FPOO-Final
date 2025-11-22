@@ -7,9 +7,10 @@ class Venado {
   private int vida;
   private int puntaje;
   private int heartSize;
+ 
   /** constructor del personaje principal y una guia de la ubicacion de sus corazones */
   public Venado() {
-    this.posicion = new PVector(width/2, 500);
+    this.posicion = new PVector(400, 500);
     this.velocidad = new PVector(7, 0);
     this.izq = false;
     this.der = false;
@@ -19,19 +20,19 @@ class Venado {
     this.corazonPos = new PVector(550, 50);
     this.heartSize = 40;
     this.puntaje=0;
+
   }
-  
+
   public void dibujar() {
-    background(255);
+    fill(165, 42, 42);
     rectMode(CENTER);
-    fill(#956530);
     rect(this.posicion.x, this.posicion.y, this.ancho, this.alto);
     fill(255, 0, 0);
     noStroke();
     /**visualizador de corazones(no definitivo) */
-    circle(corazonPos.x, corazonPos.y, heartSize);
-    circle(corazonPos.x+50, corazonPos.y, heartSize);
-    circle(corazonPos.x+100, corazonPos.y, heartSize);
+    for (int i = 0; i < vida; i++) {
+      circle(corazonPos.x + i * 50, corazonPos.y, heartSize);
+    }
     textAlign(CENTER);
     fill(0);
     text("Puntuacion: " + puntaje, 100, 50);
@@ -41,18 +42,31 @@ class Venado {
     if (der) this.posicion.x =this.posicion.x + velocidad.x;
   }
   public void sumarPuntaje(int valor) {
-  this.puntaje += valor;
-}
+    this.puntaje += valor;
+  }
 
-public int getX() {
-  return int(posicion.x);
-}
+  public int getX() {
+    return (int)(posicion.x);
+  }
 
-public int getY() {
-  return int(posicion.y);
-}
+  public int getY() {
+    return (int)(posicion.y);
+  }
 
-public int getPuntaje() {
-  return puntaje;
-}
+  public int getPuntaje() {
+    return puntaje;
+  }
+  public void restarVida() {
+    if (vida>0) {
+      vida--;
+    }
+  }
+  public int getVida() {
+    return vida;
+  }
+  public void reset() {
+    this.posicion = new PVector(width/2, 500);
+    this.vida = 3;
+    this.puntaje = 0;
+  }
 }
