@@ -1,0 +1,25 @@
+class Naranja extends Fruta {
+  float radio = 40;
+
+  public Naranja(PVector pos, PVector velocidad) {
+    super(pos, velocidad);
+    this.valor = 10;
+    this.velocidad.y = 3;
+  }
+
+  public void dibujar() {
+    fill(133, 0, 50);
+    noStroke();
+    circle(posicion.x, posicion.y, radio);
+  }
+  public void caer(float deltaTime) {
+    this.posicion.y = this.posicion.y + this.velocidad.y;
+    if ( height <= posicion.y) {
+      posicion.y = 0;
+      posicion.x = random(50, width-50);
+    }
+  }
+
+  public void hayColision() {
+  }
+}
