@@ -1,173 +1,236 @@
-// --- VARIABLES ORIGINALES ---
+// --- VARIABLES GLOBALES (Solo deben aparecer una vez) ---
 private Venado venado;
 private PImage fondo, tuto;
 private int estado;
-private float deltaTime = millis();
-private float lastTime = millis();
+private float deltaTime;
+private float lastTime;
 private Spawner spawner;
 private Escena escena;
 
-// --- VARIABLES AGREGADAS (Niveles, Game Over, Transición) ---
+// --- VARIABLES DE UI Y NIVELES ---
 private PImage imgGameOver;
 private PImage fondoNiveles;
 private LevelManager levelManager;
 
-// Variables para el Fade (sin clase externa para no invadir)
+// --- FUENTES ---
+private PFont fuentePixel;  // Solo para YOU WIN
+private PFont fuenteNormal; // Para todo lo demás (Original)
+
+// --- VARIABLES FADE Y LOGICA ---
 float fadeAlpha = 0;
 boolean fading = false;
 boolean fadeToBlack = true;
 int estadoSiguiente = -1;
+int destinoDespuesDeWin = -1;
 
 public void setup() {
   size(800, 600);
+  
+  // Inicializaciones
   venado = new Venado();
   escena = new Escena();
+  spawner = new Spawner(3000, 5); 
+  levelManager = new LevelManager();
   imageMode(CORNER);
   
-  // Carga de imágenes con protección
+  // Carga de Recursos con seguridad
   try {
     fondo = loadImage("backgroundtest.jpg");
     tuto = loadImage("arbolBack.png");
-    fondoNiveles = loadImage("niveles.jpg");      // Tu imagen de niveles
-    imgGameOver = loadImage("gameover_img.jpg");  // Tu imagen de Game Over
+    fondoNiveles = loadImage("niveles.jpg");     
+    imgGameOver = loadImage("gameover_img.jpg"); 
+    
+    // CARGAR FUENTES
+    fuentePixel = createFont("PixelGameFont.ttf", 60); 
+    fuenteNormal = createFont("SansSerif", 20); // Fuente estándar del sistema
+    
   } catch (Exception e) {
-    println("Error cargando imágenes.");
+    println("Error cargando recursos: " + e.getMessage());
+    fuentePixel = createFont("Arial", 60);
+    fuenteNormal = createFont("Arial", 20);
   }
-  
-  spawner = new Spawner(3000, 5);
-  levelManager = new LevelManager(); // Inicializamos el manager
+
   estado = StateMachine.MENU;
+  lastTime = millis();
 }
 
 public void draw() {
   float currentTime = millis();
-  deltaTime = (currentTime - lastTime) / 1000; // Corregí la división para que sea float
-  lastTime = currentTime; // Actualizamos lastTime correctamente
+  deltaTime = (currentTime - lastTime) / 1000.0;
+  lastTime = currentTime;
   
-  // Dibujo del fondo base (para limpiar)
-  if (estado != StateMachine.TUTORIAL && estado != StateMachine.MENU_NIVELES) {
-     if(fondo != null) image(fondo, 0, 0, width, height);
-     else background(200);
-  }
+  background(0); 
+  
+  // Reseteamos fuente y alineación por defecto al inicio de cada cuadro
+  textFont(fuenteNormal); 
+  textAlign(LEFT); 
 
-  /** uso de la maquina de estado */
   switch(estado) {
-  case StateMachine.MENU:
-    {
+    
+    // --- 1. MENÚ PRINCIPAL ---
+    case StateMachine.MENU: {
+      if(fondo != null) image(fondo, 0, 0, width, height);
       textAlign(CENTER);
       fill(0);
       textSize(20);
-      // TUS POSICIONES ORIGINALES
-      text("(pulsa ENTER para comenzar)", 150, 270);
-      text("(pulsa c para ver los creditos)", 150, 400);
+      // Ubicaciones originales
+      text("(pulsa ENTER para comenzar)", 150, 270); 
+      text("(pulsa C para ver los creditos)", 150, 400);
       break;
     }
-  case StateMachine.CINEMATICA:
-    {
+    
+    // --- 2. CINEMÁTICA ---
+    case StateMachine.CINEMATICA: {
       escena.dibujar();
       break;
     }
-  case StateMachine.TUTORIAL:
-    {
+    
+    // --- 3. TUTORIAL Y JUEGO ---
+    case StateMachine.TUTORIAL: {
       imageMode(CORNER); 
-      if(tuto != null) image(tuto, 0, 0, width, height); 
+      if(tuto != null) image(tuto, 0, 0, width, height);
       
       venado.dibujar();
       venado.mover();
 
+      // --- TEXTO ORIGINAL EXACTO ---
       fill(0);
       textSize(20);
-      // TU POSICIÓN ORIGINAL
+      textAlign(LEFT); 
       text("Pulsa 'q' para pausar", 100, 15);
       
       spawner.actualizar(deltaTime, venado);
+
+      // --- DETECTAR VICTORIA ---
       
-      // --- LÓGICA DE TRANSICIÓN AGREGADA ---
-      // Si es Tutorial y llegamos a 150 puntos -> Transición al menú de niveles
+      // Tutorial (Meta 150) -> Ir a Menu Niveles
       if (levelManager.nivelActual == 0 && venado.getPuntaje() >= 150) {
-         if (!fading) {
-            iniciarTransicion(StateMachine.MENU_NIVELES);
-         }
+         prepararVictoria(StateMachine.MENU_NIVELES);
       }
-      
+      // Nivel 1 (Meta 300) -> Ir a Menu Niveles
+      else if (levelManager.nivelActual == 1 && venado.getPuntaje() >= 300) {
+         prepararVictoria(StateMachine.MENU_NIVELES);
+      }
+      // Nivel 2 (Meta 500) -> Fin del juego (Menu Principal)
+      else if (levelManager.nivelActual == 2 && venado.getPuntaje() >= 500) {
+         prepararVictoria(StateMachine.MENU);
+      }
+
+      // Detectar Derrota
       if (venado.getVida() <= 0) {
         estado = StateMachine.GAMEOVER;
       }
-
       break;
     }
+    
+    // --- 4. MENÚ DE NIVELES ---
+    case StateMachine.MENU_NIVELES: {
+       if (fondoNiveles != null) image(fondoNiveles, 0, 0, width, height);
+       else background(50, 0, 100);
+       break;
+    }
 
-  case StateMachine.PAUSA:
-    {
+    // --- 5. PAUSA ---
+    case StateMachine.PAUSA: {
       background(#B3DBDA);
       fill(255);
+      textAlign(CENTER);
       textSize(40);
-      // TUS POSICIONES ORIGINALES
       text("Menu de pausa", width/2, 100);
       text("Pulsa ENTER para volver al juego", width/2, 200);
       text("Pulsa Z para volver al MENU", width/2, 300);
       break;
     }
-  case StateMachine.CREDITOS:
-    {
+    
+    // --- 6. CRÉDITOS ---
+    case StateMachine.CREDITOS: {
       background(#B3DBDA);
       textSize(20);
-      // TUS POSICIONES ORIGINALES
+      textAlign(LEFT);
       text("Creditos", 50, 100);
       text("pulse z para volver al menu", 130, 50);
-      break; // Faltaba el break aquí en tu código original
-    }
-    
-  // --- CASO MODIFICADO: GAME OVER CON IMAGEN ---
-  case StateMachine.GAMEOVER:
-    {
-      if (imgGameOver != null) image(imgGameOver, 0, 0, width, height);
-      else background(255, 0, 0); // Fondo rojo si no carga la imagen
-      
-      fill(255);
-      textAlign(CENTER);
-      // TUS TEXTOS Y POSICIONES ORIGINALES
-      text("Oh no! Te has quedado sin vidas :(", width/2, height/2);
-      text("Pulsa R para reiniciar", 450, 350);
       break;
     }
     
-  // --- CASO NUEVO: MENÚ DE NIVELES ---
-  case StateMachine.MENU_NIVELES:
-    {
-       if (fondoNiveles != null) image(fondoNiveles, 0, 0, width, height);
-       else background(50, 0, 100);
-       
-       // No agregué texto extra para no ensuciar tu imagen "niveles.jpg"
-       break;
+    // --- 7. GAME OVER ---
+    case StateMachine.GAMEOVER: {
+      if(imgGameOver != null) image(imgGameOver, 0, 0, width, height);
+      else background(200, 0, 0);
+      
+      textAlign(CENTER);
+      fill(255);
+      textSize(30);
+      text("¡FIN DEL JUEGO!", width/2, height/2);
+      if (frameCount % 60 < 30) {
+         textSize(20);
+         text("Pulsa R para reiniciar", width/2, height/2 + 50);
+      }
+      break;
+    }
+    
+    // --- 8. YOU WIN (CONGELADO + PIXEL FONT) ---
+    case StateMachine.YOU_WIN: {
+      // 1. Dibujar juego congelado (sin actualizar lógica)
+      if(tuto != null) image(tuto, 0, 0, width, height);
+      venado.dibujar(); 
+      spawner.dibujarCongelado(); // RECUERDA: Agrega este método en Spawner
+      
+      // 2. Fondo oscuro transparente
+      rectMode(CORNER);
+      noStroke();
+      fill(0, 150);
+      rect(0, 0, width, height);
+      
+      // 3. TEXTO YOU WIN (Solo aquí usamos la fuente Pixel)
+      textFont(fuentePixel); 
+      textAlign(CENTER);
+      
+      fill(255, 215, 0); // Dorado
+      textSize(80);
+      text("YOU WIN!", width/2, height/2);
+      
+      textSize(30);
+      fill(255);
+      if (frameCount % 40 < 20) {
+        text("PRESS ENTER", width/2, height/2 + 60);
+      }
+      break;
     }
   }
   
-  // --- LÓGICA DEL FADE (DIBUJADO AL FINAL) ---
+  // --- FADE RÁPIDO ---
   if (fading) {
-    rectMode(CORNER); // Aseguramos que cubra desde la esquina
+    rectMode(CORNER);
     noStroke();
     fill(0, fadeAlpha);
-    rect(0, 0, width, height); // Cubre TODA la pantalla
+    rect(0, 0, width, height);
     
+    // Velocidad 15 (Muy rápida)
     if (fadeToBlack) {
-      fadeAlpha += 5; // Velocidad de oscurecimiento
+      fadeAlpha += 15; 
       if (fadeAlpha >= 255) {
         fadeAlpha = 255;
-        estado = estadoSiguiente; // Cambio de estado oculto
-        fadeToBlack = false;      // Comenzar a aclarar
+        estado = estadoSiguiente; 
+        fadeToBlack = false;     
       }
     } else {
-      fadeAlpha -= 5; // Velocidad de aclarado
+      fadeAlpha -= 15; 
       if (fadeAlpha <= 0) {
         fadeAlpha = 0;
-        fading = false; // Fin de la transición
+        fading = false; 
       }
     }
   }
 }
 
-// Función auxiliar para iniciar el fade
+// Funciones auxiliares
+void prepararVictoria(int siguienteDestino) {
+  if (estado != StateMachine.YOU_WIN && !fading) {
+    destinoDespuesDeWin = siguienteDestino; 
+    estado = StateMachine.YOU_WIN;          
+  }
+}
+
 void iniciarTransicion(int proximo) {
   fading = true;
   fadeToBlack = true;
@@ -175,43 +238,46 @@ void iniciarTransicion(int proximo) {
   fadeAlpha = 0;
 }
 
+// --- CONTROLES ---
+
 public void keyPressed() {
-  
-  if (keyCode == ENTER && estado == StateMachine.MENU) {
-    estado = StateMachine.CINEMATICA;
-  }
   if (keyCode == LEFT || key == 'a') venado.izq = true;
   if (keyCode == RIGHT || key == 'd') venado.der = true;
-
-  if (key == 'q' && estado == StateMachine.TUTORIAL) {
-    estado = StateMachine.PAUSA;
-  }
-  if (keyCode == ENTER && estado == StateMachine.PAUSA) {
-    estado = StateMachine.TUTORIAL;
-  }
-  if (key == 'z' && estado == StateMachine.PAUSA) {
-    estado = StateMachine.MENU;
-  }
-  if (key == 'c' && estado == StateMachine.MENU) {
-    estado = StateMachine.CREDITOS;
-  }
-  // Cierre de créditos (faltaba en tu lógica original dentro del if)
-  if (key == 'z' && estado == StateMachine.CREDITOS) {
-      estado = StateMachine.MENU;
-  }
   
-  if (key == 'r' && estado == StateMachine.GAMEOVER) {
-    venado.reset();
-    spawner.reset();
-    if(escena != null) escena.reset();
-    estado = StateMachine.TUTORIAL;
-    levelManager.nivelActual = 0; // Reinicia al tutorial
+  if (estado == StateMachine.MENU) {
+    if (keyCode == ENTER) estado = StateMachine.CINEMATICA;
+    if (key == 'c') estado = StateMachine.CREDITOS;
   }
-  
-  // --- NUEVO: CONTROL MENÚ DE NIVELES ---
-  if (estado == StateMachine.MENU_NIVELES) {
+  else if (estado == StateMachine.TUTORIAL) {
+    if (key == 'q') estado = StateMachine.PAUSA;
+  }
+  else if (estado == StateMachine.PAUSA) {
+    if (keyCode == ENTER) estado = StateMachine.TUTORIAL;
+    if (key == 'z') estado = StateMachine.MENU;
+  }
+  else if (estado == StateMachine.CREDITOS) {
+    if (key == 'z') estado = StateMachine.MENU;
+  }
+  else if (estado == StateMachine.MENU_NIVELES) {
     if (key == '1') levelManager.cargarNivel(1);
     if (key == '2') levelManager.cargarNivel(2);
+  }
+  
+  // Salir de YOU WIN
+  else if (estado == StateMachine.YOU_WIN) {
+     if (keyCode == ENTER) {
+        iniciarTransicion(destinoDespuesDeWin);
+     }
+  }
+  
+  else if (estado == StateMachine.GAMEOVER) {
+    if (key == 'r' || key == 'R') {
+      venado.reset();
+      spawner.reset();
+      if(escena != null) escena.reset(); 
+      estado = StateMachine.MENU; 
+      levelManager.nivelActual = 0; 
+    }
   }
 }
 
@@ -224,8 +290,8 @@ public void mousePressed() {
   if (estado == StateMachine.CINEMATICA) {
     boolean avanzar = escena.manejarClick();
     if (avanzar) {
-      estado = StateMachine.TUTORIAL;
-      levelManager.nivelActual = 0;
+      estado = StateMachine.TUTORIAL; 
+      levelManager.nivelActual = 0; 
     }
   }
 }
