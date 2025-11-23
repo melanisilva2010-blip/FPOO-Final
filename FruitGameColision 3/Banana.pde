@@ -1,26 +1,27 @@
 class Banana extends Fruta {
-  float alto, ancho;
+  float ancho = 40; // Ajustado para que se vea bien
+  float alto = 40;
+
   public Banana(PVector pos, PVector velocidad) {
     super(pos, velocidad);
     this.valor = 15;
     this.velocidad.y = 3;
-    this.alto = 10;
-    this.ancho = 30;
   }
 
   public void dibujar() {
-    fill(200, 150, 20);
-    noStroke();
-    rect(posicion.x, posicion.y, ancho, alto);
-  }
-  public void caer(float deltaTime) {
-    this.posicion.y = this.posicion.y + this.velocidad.y;
-    if ( height <= posicion.y) {
-      posicion.y = 0;
-      posicion.x = random(50, width-50);
+    // Usamos la imagen global cargada en el Main
+    imageMode(CENTER);
+    if (imgBanana != null) {
+      image(imgBanana, posicion.x, posicion.y, ancho, alto);
+    } else {
+      // Por si falla la imagen, dibuja un cuadro amarillo
+      fill(255, 255, 0);
+      rect(posicion.x, posicion.y, ancho, alto);
     }
   }
 
-  public void hayColision() {
+  public void caer(float deltaTime) {
+    this.posicion.y += this.velocidad.y;
+    // ELIMINÉ EL REINICIO A 0 PARA EVITAR LAG INFINITO
   }
 }
