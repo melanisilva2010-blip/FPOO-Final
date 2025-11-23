@@ -1,6 +1,6 @@
 import gifAnimation.*;
 
-// --- VARIABLES GLOBALES ---
+// --- 1. VARIABLES GLOBALES (Declaración) ---
 private Venado venado;
 private PImage fondo, tuto;
 private int estado;
@@ -9,54 +9,62 @@ private float lastTime;
 private Spawner spawner;
 private Escena escena;
 
-// --- VARIABLES DE UI Y NIVELES ---
+// Variables de UI y Niveles
 private PImage imgGameOver;
 private PImage fondoNiveles;
 private LevelManager levelManager;
 
-// --- FUENTES ---
-private PFont fuentePixel;  // Para YOU WIN y GAME OVER
-private PFont fuenteNormal; // Para lo demás
+// Fuentes
+private PFont fuentePixel;  
+private PFont fuenteNormal; 
 
-// --- VARIABLES FADE Y LOGICA ---
+// Variables Fade
 float fadeAlpha = 0;
 boolean fading = false;
 boolean fadeToBlack = true;
 int estadoSiguiente = -1;
 int destinoDespuesDeWin = -1;
-
-// --- VARIABLE PARA TIEMPO DE MUERTE ---
 int timerMuerte = 0;
+
+// --- IMÁGENES DE FRUTAS (Declaramos aquí, cargamos abajo) ---
+PImage imgBanana, imgFrutilla, imgManzana, imgNaranja, imgSandia, imgPiedra;
 
 public void setup() {
   size(800, 600);
   
-  venado = new Venado(this);
-  escena = new Escena();
-  
-  // Spawner inicial (Tutorial) - Intervalo 2000, 10 frutas
- 
-  spawner = new Spawner(4000, 10);
-  
-  levelManager = new LevelManager();
-  
-  imageMode(CORNER);
-  
+  // --- 2. CARGA DE IMÁGENES (Dentro del setup) ---
   try {
     fondo = loadImage("backgroundtest.jpg");
     tuto = loadImage("arbolBack.png");
     fondoNiveles = loadImage("niveles.jpg");     
     imgGameOver = loadImage("gameover_img.jpg"); 
     
+    // CARGAMOS LAS FRUTAS AQUÍ
+    imgBanana = loadImage("Banana.png");
+    imgFrutilla = loadImage("Frutilla.png");
+    imgManzana = loadImage("Manzana.png");
+    imgNaranja = loadImage("Naranja.png");
+    imgSandia = loadImage("Sandia.png");
+    imgPiedra = loadImage("Piedra.png");
+    
+    // Fuentes
     fuentePixel = createFont("PixelGameFont.ttf", 60); 
     fuenteNormal = createFont("SansSerif", 20); 
     
   } catch (Exception e) {
     println("Error cargando recursos: " + e.getMessage());
-    fuentePixel = createFont("Arial", 60);
-    fuenteNormal = createFont("Arial", 20);
   }
-
+  
+  // --- 3. INICIALIZACIÓN DE OBJETOS ---
+  venado = new Venado(this);
+  escena = new Escena();
+  
+  // Spawner inicial (Tutorial)
+  spawner = new Spawner(3000, 10); 
+  
+  levelManager = new LevelManager();
+  
+  imageMode(CORNER);
   estado = StateMachine.MENU;
   lastTime = millis();
 }
@@ -123,15 +131,14 @@ public void draw() {
       break;
     }
     
-    // --- ESTADO INTERMEDIO: ANIMACIÓN DE MUERTE (4 SEGUNDOS) ---
+    // --- ESTADO INTERMEDIO: MUERTE ---
     case StateMachine.MURIENDO: {
       imageMode(CORNER);
       if(tuto != null) image(tuto, 0, 0, width, height);
       
       spawner.dibujarCongelado(); 
-      venado.dibujar(); // El venado sabe que tiene que mostrar el GIF de muerte
+      venado.dibujar(); 
       
-      // Espera 4 segundos y pasa a la pantalla de Game Over definitiva
       if (millis() - timerMuerte > 4000) {
          estado = StateMachine.GAMEOVER;
       }
@@ -164,28 +171,24 @@ public void draw() {
       break;
     }
     
-    // --- GAME OVER (ESTILO "YOU WIN") ---
+    // --- GAME OVER ---
     case StateMachine.GAMEOVER: {
-      // 1. Dibujar el juego congelado de fondo
       if(tuto != null) image(tuto, 0, 0, width, height);
       spawner.dibujarCongelado(); 
-      venado.dibujar(); // Mostrará la imagen final de muerte (deer-death 1.png)
+      venado.dibujar(); 
       
-      // 2. Capa oscura semitransparente
       rectMode(CORNER);
       noStroke();
-      fill(0, 150); // Negro con transparencia
+      fill(0, 150); 
       rect(0, 0, width, height);
       
-      // 3. Texto con Fuente Pixel
       textFont(fuentePixel); 
       textAlign(CENTER);
       
-      fill(255, 0, 0); // Rojo para Game Over
+      fill(255, 0, 0); 
       textSize(80);
       text("GAME OVER", width/2, height/2);
       
-      // Texto parpadeante
       textSize(30);
       fill(255);
       if (frameCount % 60 < 30) {
@@ -194,7 +197,7 @@ public void draw() {
       break;
     }
     
-    // --- YOU WIN (ESTILO ORIGINAL) ---
+    // --- YOU WIN ---
     case StateMachine.YOU_WIN: {
       if(tuto != null) image(tuto, 0, 0, width, height);
       venado.dibujar(); 
@@ -208,7 +211,7 @@ public void draw() {
       textFont(fuentePixel); 
       textAlign(CENTER);
       
-      fill(255, 215, 0); // Dorado
+      fill(255, 215, 0); 
       textSize(80);
       text("YOU WIN!", width/2, height/2);
       
@@ -290,14 +293,12 @@ public void keyPressed() {
      }
   }
   
-  // En keyPressed -> GAMEOVER
   else if (estado == StateMachine.GAMEOVER) {
     if (key == 'r' || key == 'R') {
       venado.reset();
       
       int nivel = levelManager.nivelActual;
-      // Actualizamos los tiempos aquí también
-      if (nivel == 0) spawner = new Spawner(4000, 10); 
+      if (nivel == 0) spawner = new Spawner(3000, 10); 
       else if (nivel == 1) spawner = new Spawner(2500, 20); 
       else spawner = new Spawner(1500, 30); 
       

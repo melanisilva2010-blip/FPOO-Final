@@ -8,18 +8,16 @@ class Naranja extends Fruta {
   }
 
   public void dibujar() {
-    fill(133, 0, 50);
-    noStroke();
-    circle(posicion.x, posicion.y, radio);
-  }
-  public void caer(float deltaTime) {
-    this.posicion.y = this.posicion.y + this.velocidad.y;
-    if ( height <= posicion.y) {
-      posicion.y = 0;
-      posicion.x = random(50, width-50);
+    imageMode(CENTER);
+    if (imgNaranja != null) {
+      image(imgNaranja, posicion.x, posicion.y, radio, radio);
+    } else {
+      fill(255, 165, 0);
+      circle(posicion.x, posicion.y, radio);
     }
   }
 
-  public void hayColision() {
+  public void caer(float deltaTime) {
+    this.posicion.y += this.velocidad.y;
   }
 }

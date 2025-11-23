@@ -1,5 +1,5 @@
 class Sandia extends Fruta {
-  float radio = 60;
+  float radio = 60; // Es más grande
 
   public Sandia(PVector pos, PVector velocidad) {
     super(pos, velocidad);
@@ -8,18 +8,16 @@ class Sandia extends Fruta {
   }
 
   public void dibujar() {
-    fill(0, 255, 0);
-    noStroke();
-    circle(posicion.x, posicion.y, radio);
-  }
-  public void caer(float deltaTime) {
-    this.posicion.y = this.posicion.y + this.velocidad.y;
-    if ( height <= posicion.y) {
-      posicion.y = 0;
-      posicion.x = random(50, width-50);
+    imageMode(CENTER);
+    if (imgSandia != null) {
+      image(imgSandia, posicion.x, posicion.y, radio, radio);
+    } else {
+      fill(0, 255, 0);
+      circle(posicion.x, posicion.y, radio);
     }
   }
 
-  public void hayColision() {
+  public void caer(float deltaTime) {
+    this.posicion.y += this.velocidad.y;
   }
 }
