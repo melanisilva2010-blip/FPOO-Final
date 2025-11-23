@@ -13,30 +13,29 @@ class Spawner {
     intervaloFruta = intervalo; 
     maxFrutas = max;
     
-    // --- AJUSTE DE DIFICULTAD EQUILIBRADO ---
+    // --- AJUSTE DE DIFICULTAD ---
     
-    // TUTORIAL (Intervalo lento, 3000ms o más)
-    if (intervalo >= 3000) { 
-      probabilidadPiedra = 5; // 5% Piedras (Muy pocas)
+    // TUTORIAL (Muy lento: 4000ms o más)
+    if (intervalo >= 4000) { 
+      probabilidadPiedra = 5; // 5% Piedras (Casi nada)
     } 
-    // NIVEL 1 / MEDIO (Intervalo entre 1500 y 3000)
-    else if (intervalo >= 1500) {
-      probabilidadPiedra = 20; // 20% Piedras (1 de cada 5 objetos)
+    // NIVEL 1 (Medio: entre 2500ms y 4000ms)
+    else if (intervalo >= 2500) {
+      probabilidadPiedra = 30; // 30% Piedras (¡Ahora salen más!)
     } 
-    // NIVEL 2 / RÁPIDO (Intervalo menor a 1500)
+    // NIVEL 2 (Rápido: menos de 2500ms)
     else {
-      probabilidadPiedra = 35; // 35% Piedras (Salen más, pero siguen ganando las frutas)
+      probabilidadPiedra = 45; // 45% Piedras (Difícil)
     }
     
-    // Mensaje en consola para verificar que cargó bien
-    println("Spawner cargado. Intervalo: " + intervalo + " | Probabilidad Piedra: " + probabilidadPiedra + "%");
+    println("Spawner cargado. Intervalo: " + intervalo + "ms | Chance Piedra: " + probabilidadPiedra + "%");
   }
 
   public void actualizar(float deltaTime, Venado venado) {
     for (int i = frutas.size() - 1; i >= 0; i--) {
       Fruta f = frutas.get(i);
 
-      // --- 1. LÓGICA DE COLISIÓN (Sin cambios) ---
+      // --- 1. LÓGICA DE COLISIÓN ---
       if (f instanceof Piedra) {
         if (f.hayColision(venado)) {
           venado.restarVida();
@@ -54,32 +53,28 @@ class Spawner {
       // --- 2. DIBUJAR Y MOVER ---
       f.dibujar();
       f.caer(deltaTime);
-      
-      // (Aquí borré la línea "if (f.pos.y > ...)" para que no te de error nunca más)
     }
 
     // --- 3. GENERAR NUEVAS ---
-    if (millis() - ultimaFruta > intervaloFruta && frutas.size() < maxFrutas) {
+    if (millis() - ultimaFruta > intervaloFruta) {
       generarFruta();
       ultimaFruta = millis();
     }
   }
 
   private void generarFruta() {
-    // Posición aleatoria
     PVector pos = new PVector(random(50, width - 50), -50); 
     PVector vel = new PVector(0, 0); 
     Fruta nueva;
 
-    // --- DECISIÓN: ¿PIEDRA O FRUTA? ---
     float dado = random(100); 
 
     if (dado < probabilidadPiedra) {
-       // Sale PIEDRA
+       // PIEDRA
        nueva = new Piedra(pos, vel);
     } 
     else {
-       // Sale FRUTA (Elegimos una al azar para mantener variedad)
+       // FRUTA AL AZAR
        int tipoFruta = int(random(5)); 
        switch(tipoFruta) {
          case 0: nueva = new Manzana(pos, vel); break;
@@ -97,10 +92,10 @@ class Spawner {
     frutas.clear();
     ultimaFruta = millis();
   }
-  public void dibujarCongelado() {
-  for (Fruta f : frutas) {
-    f.dibujar(); 
-  }
-}
   
+  public void dibujarCongelado() {
+    for (Fruta f : frutas) {
+      f.dibujar(); 
+    }
+  }
 }
